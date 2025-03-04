@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Happy Grocery</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <h1>Happy Grocery</h1>
 
     <form action="">
-        <textarea id="table" name="table" rows="4" cols="50"></textarea>
+        <textarea readonly id="table" name="table" rows="4" cols="50"></textarea>
     </form>
 
     <form action="">
@@ -22,10 +22,50 @@
           <option value="promotions">Find items that are currently on sale</option>
           <option value="deliveries">Find the amount of delivery request this month</option>
         </select>
-        <input type="submit" value="Submit">
     </form>
+    <button id="submitButton">Submit</button>
 
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          const submitButton = document.getElementById('submitButton');
+          const textarea = document.getElementById('table');
+          const querySelect = document.getElementById('queries');
+      
+          if (submitButton && textarea && querySelect) {
+            submitButton.addEventListener('click', async (event) => {
+              event.preventDefault(); // Prevent form submission
+              console.log('Submit button clicked'); // Debugging log
+              const queryType = querySelect.value;
+              console.log('Selected query:', queryType); // Debugging log
+      
+              try {
+                const response = await fetch('http://localhost:3000/query', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ queryType }),
+                });
+                console.log('Response received:', response); // Debugging log
+      
+                const data = await response.json();
+                console.log('Data:', data); // Debugging log
+                textarea.value = JSON.stringify(data, null, 2); // Display the result in the textarea
+              } catch (error) {
+                console.error('Error:', error);
+                textarea.value = 'An error occurred while fetching data.';
+              }
+            });
+          } else {
+            console.error('One or more elements are missing in the DOM');
+          }
+        });
+      </script>
 
+      
+
+
+    
 </body>
 </html>
