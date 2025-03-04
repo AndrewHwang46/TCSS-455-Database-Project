@@ -1,5 +1,6 @@
 const express = require('express');
 const mysql = require('mysql2');
+const cors = require('cors'); // Add CORS support
 const app = express();
 const port = 3000;
 
@@ -20,12 +21,14 @@ db.connect((err) => {
   console.log('Connected to the database');
 });
 
-// Middleware to parse JSON
+// Middleware to parse JSON and enable CORS
 app.use(express.json());
+app.use(cors());
 
 // API endpoint to handle queries
 app.post('/query', (req, res) => {
   const { queryType } = req.body;
+  console.log('Received query type:', queryType);
 
   let sqlQuery;
   switch (queryType) {
@@ -75,11 +78,14 @@ app.post('/query', (req, res) => {
       return res.status(400).json({ error: 'Invalid query type' });
   }
 
+  console.log('Executing query:', sqlQuery);
+
   db.query(sqlQuery, (err, results) => {
     if (err) {
       console.error('Error executing query:', err);
       return res.status(500).json({ error: 'Database error' });
     }
+    console.log('Query results:', results);
     res.json(results);
   });
 });

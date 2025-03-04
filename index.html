@@ -1,71 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Happy Grocery</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Happy Grocery</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Happy Grocery</h1>
+  <h1>Happy Grocery</h1>
 
-    <form action="">
-        <textarea readonly id="table" name="table" rows="4" cols="50"></textarea>
-    </form>
+  <form id="queryForm">
+    <textarea id="table" name="table" rows="4" cols="50"></textarea>
+  </form>
 
-    <form action="">
-        <label for="cars">Choose a query:</label>
-        <select name="cars" id="cars">
-          <option value="least">Find items with least amount of stock</option>
-          <option value="returns">Find items that are commonly returned</option>
-          <option value="average">Find the average amount spent on grocery orders</option>
-          <option value="promotions">Find items that are currently on sale</option>
-          <option value="deliveries">Find the amount of delivery request this month</option>
-        </select>
-    </form>
-    <button id="submitButton">Submit</button>
+  <form>
+    <label for="queries">Choose a query:</label>
+    <select name="queries" id="queries">
+      <option value="least">Find items with least amount of stock</option>
+      <option value="returns">Find items that are commonly returned</option>
+      <option value="average">Find the average amount spent on grocery orders</option>
+      <option value="promotions">Find items that are currently on sale</option>
+      <option value="deliveries">Find the amount of delivery request this month</option>
+    </select>
+  </form>
+  <button id="submitButton">Submit</button>
 
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('DOM fully loaded'); // Debugging log
+      const submitButton = document.getElementById('submitButton');
+      const textarea = document.getElementById('table');
+      const querySelect = document.getElementById('queries');
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-          const submitButton = document.getElementById('submitButton');
-          const textarea = document.getElementById('table');
-          const querySelect = document.getElementById('queries');
-      
-          if (submitButton && textarea && querySelect) {
-            submitButton.addEventListener('click', async (event) => {
-              event.preventDefault(); // Prevent form submission
-              console.log('Submit button clicked'); // Debugging log
-              const queryType = querySelect.value;
-              console.log('Selected query:', queryType); // Debugging log
-      
-              try {
-                const response = await fetch('http://localhost:3000/query', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({ queryType }),
-                });
-                console.log('Response received:', response); // Debugging log
-      
-                const data = await response.json();
-                console.log('Data:', data); // Debugging log
-                textarea.value = JSON.stringify(data, null, 2); // Display the result in the textarea
-              } catch (error) {
-                console.error('Error:', error);
-                textarea.value = 'An error occurred while fetching data.';
-              }
+      if (submitButton && textarea && querySelect) {
+        console.log('All elements found'); // Debugging log
+        submitButton.addEventListener('click', async (event) => {
+          event.preventDefault(); // Prevent form submission
+          console.log('Submit button clicked'); // Debugging log
+          const queryType = querySelect.value;
+          console.log('Selected query:', queryType); // Debugging log
+
+          try {
+            const response = await fetch('http://localhost:3000/query', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ queryType }),
             });
-          } else {
-            console.error('One or more elements are missing in the DOM');
+            console.log('Response received:', response); // Debugging log
+
+            const data = await response.json();
+            console.log('Data:', data); // Debugging log
+            textarea.value = JSON.stringify(data, null, 2); // Display the result in the textarea
+          } catch (error) {
+            console.error('Error:', error);
+            textarea.value = 'An error occurred while fetching data.';
           }
         });
-      </script>
-
-      
-
-
-    
+      } else {
+        console.error('One or more elements are missing in the DOM');
+      }
+    });
+  </script>
 </body>
 </html>
