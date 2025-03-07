@@ -225,12 +225,24 @@ public class DatabaseQuerySelector extends JFrame {
     }
 
     public static void main(String[] args) {
-        // Ensure database driver is loaded
+        // More robust driver loading with additional information
         try {
+            // Attempt to load the driver class
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            System.out.println("SQL Server JDBC Driver loaded successfully");
         } catch (ClassNotFoundException e) {
             System.err.println("SQL Server JDBC Driver not found");
+            System.err.println("Please ensure the JDBC driver is in your classpath:");
+            System.err.println("1. Download from: https://learn.microsoft.com/en-us/sql/connect/jdbc/download-microsoft-jdbc-driver-for-sql-server");
+            System.err.println("2. Add the .jar file to your project's libraries");
+            System.err.println("3. Verify the jar filename and path");
             e.printStackTrace();
+
+            // Show a dialog to the user
+            JOptionPane.showMessageDialog(null,
+                    "JDBC Driver not found. Please check console for detailed instructions.",
+                    "Driver Error",
+                    JOptionPane.ERROR_MESSAGE);
             return;
         }
 
