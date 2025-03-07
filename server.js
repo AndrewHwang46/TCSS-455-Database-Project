@@ -34,7 +34,8 @@ const config = {
     enableArithAbort: true
   },
   authentication: {
-    type: 'default',  // Windows Authentication
+    //type: 'default',  // Windows Authentication
+    type: 'ntlm', 
     options: {
       trustedConnection: true
     }
