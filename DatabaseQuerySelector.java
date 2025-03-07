@@ -1,16 +1,31 @@
-import java.awt.*;
-import java.awt.event.*;
-import java.sql.*;
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.table.DefaultTableModel;
 
-public class DatabaseQuerySelector extends JFrame {
-    // Database connection parameters
-    private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=Hwang_Andrew_db;encrypt=true;trustServerCertificate=true;";
-    private static final String USERNAME = "your_username"; // Replace with your actual username
-    private static final String PASSWORD = "your_password"; // Replace with your actual password
+public class DatabaseQuerySelector {
+    // Static database connection parameters
+    private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=Hwang_Andrew_db" +
+            ";encrypt=true;trustServerCertificate=true;integratedSecurity=true";
 
     // Queries from Lai_Regan_queries.sql
     private static final String[] AVAILABLE_QUERIES = {
@@ -119,20 +134,27 @@ public class DatabaseQuerySelector extends JFrame {
                     "FROM Orders"
     };
 
+    // Main application frame
+    private JFrame frame;
     private JList<String> queryList;
     private JButton executeButton;
     private JTable resultTable;
     private DefaultTableModel tableModel;
 
+    // Constructor
     public DatabaseQuerySelector() {
-        // Set up the main frame
-        setTitle("Database Query Selector");
-        setSize(800, 600);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new BorderLayout());
+        initializeComponents();
+    }
+
+    // Initialize UI components
+    private void initializeComponents() {
+        frame = new JFrame("Database Query Selector");
+        frame.setSize(800, 600);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLayout(new BorderLayout());
 
         // Create query list
-        queryList = new JList<String>(AVAILABLE_QUERIES);
+        queryList = new JList<>(AVAILABLE_QUERIES);
         queryList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         JScrollPane listScrollPane = new JScrollPane(queryList);
         listScrollPane.setPreferredSize(new Dimension(250, 400));
@@ -140,6 +162,7 @@ public class DatabaseQuerySelector extends JFrame {
         // Create execute button
         executeButton = new JButton("Execute Selected Queries");
         executeButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 executeSelectedQueries();
             }
@@ -156,20 +179,22 @@ public class DatabaseQuerySelector extends JFrame {
         leftPanel.add(listScrollPane, BorderLayout.CENTER);
         leftPanel.add(executeButton, BorderLayout.SOUTH);
 
-        add(leftPanel, BorderLayout.WEST);
-        add(tableScrollPane, BorderLayout.CENTER);
+        frame.add(leftPanel, BorderLayout.WEST);
+        frame.add(tableScrollPane, BorderLayout.CENTER);
     }
 
+    // Execute selected queries
     private void executeSelectedQueries() {
         // Get selected indices
-        List<Integer> selectedIndices = new ArrayList<Integer>();
-        for (int index : queryList.getSelectedIndices()) {
+        List<Integer> selectedIndices = new ArrayList<>();
+        int[] selections = queryList.getSelectedIndices();
+        for (int index : selections) {
             selectedIndices.add(index);
         }
 
         // Validate selection
         if (selectedIndices.isEmpty() || selectedIndices.size() > 5) {
-            JOptionPane.showMessageDialog(this,
+            JOptionPane.showMessageDialog(frame,
                     "Please select between 1 and 5 queries.",
                     "Selection Error",
                     JOptionPane.ERROR_MESSAGE);
@@ -181,7 +206,7 @@ public class DatabaseQuerySelector extends JFrame {
         tableModel.setColumnCount(0);
 
         // Connect to database and execute queries
-        try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD)) {
+        try (Connection conn = DriverManager.getConnection(URL)) {
             // Iterate through selected queries
             for (int index : selectedIndices) {
                 try (Statement stmt = conn.createStatement();
@@ -217,40 +242,33 @@ public class DatabaseQuerySelector extends JFrame {
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(this,
+            JOptionPane.showMessageDialog(frame,
                     "Database error: " + ex.getMessage(),
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
         }
     }
 
+    // Main method to run the application
     public static void main(String[] args) {
-        // More robust driver loading with additional information
+        System.out.println(System.getProperty("sun.arch.data.model"));
+        // Add this near the start of main()
+        java.util.logging.Logger.getLogger("com.microsoft.sqlserver.jdbc").setLevel(java.util.logging.Level.FINEST);
+        // Ensure database driver is loaded
         try {
-            // Attempt to load the driver class
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            System.out.println("SQL Server JDBC Driver loaded successfully");
         } catch (ClassNotFoundException e) {
             System.err.println("SQL Server JDBC Driver not found");
-            System.err.println("Please ensure the JDBC driver is in your classpath:");
-            System.err.println("1. Download from: https://learn.microsoft.com/en-us/sql/connect/jdbc/download-microsoft-jdbc-driver-for-sql-server");
-            System.err.println("2. Add the .jar file to your project's libraries");
-            System.err.println("3. Verify the jar filename and path");
             e.printStackTrace();
-
-            // Show a dialog to the user
-            JOptionPane.showMessageDialog(null,
-                    "JDBC Driver not found. Please check console for detailed instructions.",
-                    "Driver Error",
-                    JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         // Run the application
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 DatabaseQuerySelector app = new DatabaseQuerySelector();
-                app.setVisible(true);
+                app.frame.setVisible(true);
             }
         });
     }
